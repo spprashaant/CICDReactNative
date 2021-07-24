@@ -9,6 +9,7 @@
 import React from 'react';
 import type {Node} from 'react';
 import {
+  Button,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -26,71 +27,43 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};
+import Crashes from 'appcenter-crashes';
+import Analytics from 'appcenter-analytics';
 
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+export default class App extends React.Component {
+  constructor() {
+    super();
+    this.checkPreviousSession();
+  }
+  async checkPreviousSession() {
+    const didCrash = await Crashes.hasCrashedInLastSession();
+    if (didCrash) {
+      const report = await Crashes.lastSessionCrashReport();
+      alert("Sorry about that crash, we're working on a solution");
+    }
+  }
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
+  render() {
+    return (
+      <View style={styles.container}>
+        <Button
+          title="Calculate inflation"
+          onPress={() =>
+            Analytics.trackEvent('calculate_inflation', {
+              Internet: 'Cellular',
+              GPS: 'On',
+            })
+          }
+        />
+      </View>
+    );
+  }
+}
 
 const styles = StyleSheet.create({
+  container: {
+    marginTop: 40,
+  },
   sectionContainer: {
     marginTop: 32,
     paddingHorizontal: 24,
@@ -109,4 +82,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+//export default App;
